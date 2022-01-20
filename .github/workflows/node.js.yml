@@ -8,6 +8,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 * * * *'
 
 jobs:
   build:
@@ -16,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -28,3 +30,10 @@ jobs:
         cache: 'npm'
     - run: npm install
     - run: npm start
+    - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: robot
+          author_email: robot@action.com
+          message: 'schedule job'
+          add: '.'
