@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "tsc && node dist/index.js",
-    "clean": "rm -rf dist origindata readable"
+    "clean": "rm -rf dist data markdown"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,8 @@
   "dependencies": {
     "@types/node": "^17.0.12",
     "axios": "^0.25.0",
-    "cheerio": "^1.0.0-rc.10"
+    "cheerio": "^1.0.0-rc.10",
+    "dayjs": "^1.10.7"
   },
   "devDependencies": {
     "typescript": "^4.5.5"

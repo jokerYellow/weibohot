@@ -3,7 +3,14 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
 import * as fs from "fs";
+import * as dayjs from "dayjs";
+import * as timezone from 'dayjs/plugin/timezone' // 导入插件
+import * as utc from 'dayjs/plugin/utc' // 导入插件
 
+const path = {
+  markdown: "markdown",
+  data: "data",
+};
 class Element {
   title: string;
   href: string;
@@ -32,13 +39,10 @@ function MakeElement(li: any): Element {
 }
 
 function getHot(d: any): Array<Element> {
-  const $ = cheerio.load(d);
-  const section = $("body > div > section > ul > li");
-  var rt = Array<Element>();
-  section.each((_, el) => {
-    rt.push(MakeElement(el));
-  });
-  return rt;
+  return cheerio
+    .load(d)("body > div > section > ul > li")
+    .toArray()
+    .map(MakeElement);
 }
 
 function generateMD(s: { date: string; data: Array<Element> }) {
@@ -49,26 +53,24 @@ function generateMD(s: { date: string; data: Array<Element> }) {
   return md;
 }
 
+function mkdir(path: string) {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}
+
 requestHot().then((res) => {
   const items = getHot(res.data);
-  const d = new Date();
-  var datestring =
-    d.getFullYear() +
-    "-" +
-    ("0" + (d.getMonth() + 1)).slice(-2) +
-    "-" +
-    ("0" + d.getDate()).slice(-2) +
-    " " +
-    ("0" + d.getHours()).slice(-2) +
-    ":" +
-    ("0" + d.getMinutes()).slice(-2);
+  dayjs.extend(utc)
+  dayjs.extend(timezone)
+  dayjs.tz.setDefault("China/Shanghai")
+  const datestring = dayjs().format("YYYY-MM-DD HH:mm ZZ")
   const s = { date: datestring, data: items };
-  if (!fs.existsSync(`origindata`)) {
-    fs.mkdirSync(`origindata`);
-  }
-  if (!fs.existsSync(`readable`)) {
-    fs.mkdirSync(`readable`);
-  }
-  fs.writeFileSync(`origindata/${datestring}.json`, JSON.stringify(s, null, 3));
-  fs.writeFileSync(`readable/${datestring}.md`, generateMD(s));
+  mkdir(path.markdown);
+  mkdir(path.data);
+  fs.writeFileSync(
+    `${path.data}/${datestring}.json`,
+    JSON.stringify(s, null, 3)
+  );
+  fs.writeFileSync(`${path.markdown}/${datestring}.md`, generateMD(s));
 });
