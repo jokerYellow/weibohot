@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 0,12,20 * * *'
 
 jobs:
   build:
@@ -28,8 +28,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm install
-    - run: npm start
+    - run: npm run deploy
     - name: Commit changes
       uses: EndBug/add-and-commit@v7
       with:
