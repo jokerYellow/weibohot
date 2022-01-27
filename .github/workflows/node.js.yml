@@ -28,6 +28,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: npm install     
     - run: npm run deploy
     - name: Commit changes
       uses: EndBug/add-and-commit@v7
