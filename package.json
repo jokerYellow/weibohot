@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "deploy": "tsc && node dist/index.js",
+    "clean": "rm -rf dist origindata readable"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,11 @@
   },
   "homepage": "https://github.com/jokerYellow/weibohot#readme",
   "dependencies": {
+    "@types/node": "^17.0.12",
     "axios": "^0.25.0",
     "cheerio": "^1.0.0-rc.10"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
   }
 }

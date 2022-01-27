@@ -1,6 +1,20 @@
-const cheerio = require("cheerio");
-const axios = require("axios");
-const fs = require("fs");
+// const cheerio = require("cheerio");
+
+import * as cheerio from "cheerio";
+import axios from "axios";
+import * as fs from "fs";
+
+class Element {
+  title: string;
+  href: string;
+  constructor(title: string, href: string) {
+    this.title = title;
+    this.href = href;
+  }
+  toString(): string {
+    return `title:${this.title} href:${this.href}`;
+  }
+}
 
 function requestHot() {
   return axios.get("https://s.weibo.com/top/summary?cate=realtimehot", {
@@ -11,25 +25,23 @@ function requestHot() {
   });
 }
 
-function Element(li) {
-  this.title = li.childNodes[1].children[3].firstChild.data;
-  this.href = `https://s.weibo.com${li.childNodes[1].attribs["href"]}`;
-  this.toString = () => {
-    return `title:${this.title} href:${this.href}`;
-  };
+function MakeElement(li: any): Element {
+  var title = li.childNodes[1].children[3].firstChild.data;
+  var href = `https://s.weibo.com${li.childNodes[1].attribs["href"]}`;
+  return new Element(title, href);
 }
 
-function getHot(d) {
+function getHot(d: any): Array<Element> {
   const $ = cheerio.load(d);
   const section = $("body > div > section > ul > li");
-  var rt = [];
+  var rt = Array<Element>();
   section.each((_, el) => {
-    rt.push(new Element(el));
+    rt.push(MakeElement(el));
   });
   return rt;
 }
 
-function generateMD(s) {
+function generateMD(s: { date: string; data: Array<Element> }) {
   var md = `# ${s.date}`;
   s.data.forEach((item, index) => {
     md += `\n${index + 1}. [${item.title}](${item.href})`;
@@ -51,6 +63,12 @@ requestHot().then((res) => {
     ":" +
     ("0" + d.getMinutes()).slice(-2);
   const s = { date: datestring, data: items };
+  if (!fs.existsSync(`origindata`)) {
+    fs.mkdirSync(`origindata`);
+  }
+  if (!fs.existsSync(`readable`)) {
+    fs.mkdirSync(`readable`);
+  }
   fs.writeFileSync(`origindata/${datestring}.json`, JSON.stringify(s, null, 3));
   fs.writeFileSync(`readable/${datestring}.md`, generateMD(s));
 });
