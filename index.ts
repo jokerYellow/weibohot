@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as dayjs from "dayjs";
 import * as timezone from 'dayjs/plugin/timezone' // 导入插件
 import * as utc from 'dayjs/plugin/utc' // 导入插件
+import {insertWeibo} from './seed.js';
 
 const path = {
   markdown: "markdown",
@@ -73,4 +74,10 @@ requestHot().then((res) => {
     JSON.stringify(s, null, 3)
   );
   fs.writeFileSync(`${path.markdown}/${datestring}.md`, generateMD(s));
+  insertWeibo(`${path.data}/${datestring}.json`).catch((err: any) => {
+    console.error(
+      "An error occurred while attempting to seed the database:",
+      err
+    );
+  });;
 });

@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "tsc && node dist/index.js",
-    "clean": "rm -rf dist data markdown"
+    "deploy": "tsc && node -r dotenv/config dist/index.js",
+    "clean": "rm -rf dist data markdown",
+    "seed": "node -r dotenv/config ./seed.js"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,11 @@
   "homepage": "https://github.com/jokerYellow/weibohot#readme",
   "dependencies": {
     "@types/node": "^17.0.12",
+    "@vercel/postgres": "^0.8.0",
     "axios": "^0.25.0",
     "cheerio": "^1.0.0-rc.10",
-    "dayjs": "^1.10.7"
+    "dayjs": "^1.10.7",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "typescript": "^4.5.5"
