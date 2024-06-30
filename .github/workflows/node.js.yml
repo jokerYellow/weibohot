@@ -23,13 +23,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: add env 
-    - run:  echo "POSTGRES_URL=${{ secrets.POSTGRES_URL_NO_SSL }}" >> .env
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run:  echo "POSTGRES_URL=${{ secrets.POSTGRES_URL_NO_SSL }}" >> .env
     - run: npm install     
     - run: npm run deploy
     - name: Commit changes
