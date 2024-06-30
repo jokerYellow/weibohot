@@ -1,4 +1,4 @@
-const { db } = require("@vercel/postgres");
+const { db, createPool } = require("@vercel/postgres");
 const { json } = require("stream/consumers");
 const fs = require("fs");
 const path = require("path");
@@ -102,15 +102,27 @@ async function insertMultiple(weibos, client) {
 }
 
 async function main() {
-    const client = await db.connect();
-    await seedWeibo(client);
-    await client.end();
+  const client = await db.connect();
+  await seedWeibo(client);
+  await client.end();
 }
 
 export async function insertWeibo(filePath) {
-    const client = await db.connect();
-    await insertFile(filePath, client);
-    await client.end();
+  const client = await db.connect();
+  await insertFile(filePath, client);
+  await client.end();
+}
+
+async function getClient(connectionString) {
+  const pool = createPool({
+    connectionString: connectionString,
+    ssl: {
+      rejectUnauthorized: false, // Only required if using a self-signed SSL certificate
+    },
+  });
+  const client = await pool.connect();
+  console.log("Connected to PostgreSQL database",client);
+  return client;
 }
 
 // main().catch((err) => {

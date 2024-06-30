@@ -15,7 +15,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    environment: production
     strategy:
       matrix:
         node-version: [16.x]
@@ -23,6 +23,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: add env 
+    - run:  echo "POSTGRES_URL=${{ secrets.POSTGRES_URL_NO_SSL }}" >> .env
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
