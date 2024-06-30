@@ -15,7 +15,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    environment: production
+    environment: product
     strategy:
       matrix:
         node-version: [16.x]
@@ -28,7 +28,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run:  echo "POSTGRES_URL=${{ secrets.POSTGRES_URL_NO_SSL }}" >> .env
+    - run:  echo "POSTGRES_URL=${{ secrets.POSTGRES_URL_NO_SSL }}" > .env
     - run: npm install     
     - run: npm run deploy
     - name: Commit changes
