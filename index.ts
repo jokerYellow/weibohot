@@ -59,6 +59,8 @@ function mkdir(path: string) {
 }
 
 requestHot().then((res) => {
+  dayjs.extend(timezone)
+  dayjs.extend(utc)
   const items = getHot(res.data);
   const datestring = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm ZZ");
   console.log('current date '+ datestring);
