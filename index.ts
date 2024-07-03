@@ -60,10 +60,8 @@ function mkdir(path: string) {
 
 requestHot().then((res) => {
   const items = getHot(res.data);
-  dayjs.extend(utc)
-  dayjs.extend(timezone)
-  dayjs.tz.setDefault("China/Shanghai")
-  const datestring = dayjs().format("YYYY-MM-DD HH:mm ZZ")
+  const datestring = dayjs().tz("Asia/Shanghai").format("YYYY-MM-DD HH:mm ZZ");
+  console.log('current date '+ datestring);
   const s = { date: datestring, data: items };
   mkdir(path.markdown);
   mkdir(path.data);
