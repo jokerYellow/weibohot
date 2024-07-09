@@ -10,6 +10,7 @@
     },
     "files": [
         "index.ts",
-        "seed.js"
+        "seed.js",
+        "weibo_failed.ts"
     ]
 }

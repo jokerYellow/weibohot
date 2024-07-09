@@ -8,7 +8,8 @@
     "deploy": "tsc && node -r dotenv/config dist/index.js",
     "clean": "rm -rf dist data markdown",
     "seed": "node -r dotenv/config ./seed.js",
-    "testConnect": " node ./seed.js"
+    "testConnect": " node ./seed.js",
+    "weibo": "ts-node weibo.ts"
   },
   "repository": {
     "type": "git",
@@ -26,9 +27,11 @@
     "axios": "^0.25.0",
     "cheerio": "^1.0.0-rc.10",
     "dayjs": "^1.10.7",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "puppeteer": "^22.12.1"
   },
   "devDependencies": {
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
 }
