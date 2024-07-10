@@ -1,5 +1,9 @@
 import * as puppeteer from "puppeteer";
 import * as cheerio from "cheerio";
+import { Client, db, VercelPoolClient } from "@vercel/postgres";
+
+const cookieString =
+  "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWawXashXUV0jJ6asTDNm0T; SUB=_2AkMWuqOaf8NxqwJRmP4XyGviZI10zAHEieKg5lJBJRMxHRl-yT8XqkEhtRB6PTqNdRNl2srRcYSRuDiYpmQ_pAi58gH3; _s_tentry=passport.weibo.com; Apache=6796928672649.46.1642474670986; SINAGLOBAL=6796928672649.46.1642474670986; ULV=1642474671041:1:1:1:6796928672649.46.1642474670986:";
 
 //define a weibo struct,contain author name,href,author id, content ,date and like number
 class Weibo {
@@ -34,12 +38,6 @@ async function fetchPageContent(
   return content;
 }
 
-// Usage
-const url = "https://weibo.com/u/1497035431"; // 替换为您要抓取的网页URL
-
-const cookieString =
-  "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWawXashXUV0jJ6asTDNm0T; SUB=_2AkMWuqOaf8NxqwJRmP4XyGviZI10zAHEieKg5lJBJRMxHRl-yT8XqkEhtRB6PTqNdRNl2srRcYSRuDiYpmQ_pAi58gH3; _s_tentry=passport.weibo.com; Apache=6796928672649.46.1642474670986; SINAGLOBAL=6796928672649.46.1642474670986; ULV=1642474671041:1:1:1:6796928672649.46.1642474670986:";
-
 function parseCookieString(
   cookieString: string
 ): puppeteer.Protocol.Network.CookieParam[] {
@@ -61,57 +59,117 @@ function parseCookieString(
   return cookies;
 }
 
-const cookies = parseCookieString(cookieString);
-console.log(cookies);
+async function createTable(client: VercelPoolClient) {
+  // const client = await db.connect();
+  await client.query(
+    `create table IF NOT EXISTS weibo(
+    id serial primary key,
+    authorName varchar(255),
+    href varchar(255),
+    authorId varchar(255),
+    content text,
+    retweetContent text,
+    date varchar(255),
+    likeNumber varchar(255));`
+  );
+}
 
-fetchPageContent(url, cookies)
-  .then((pageContent) => {
-    const $ = cheerio.load(pageContent);
-    //#scroller > div.vue-recycle-scroller__item-wrapper > div.vue-recycle-scroller__item-view.xh-highlight
-    const subDivs = $(
-      "#scroller > div.vue-recycle-scroller__item-wrapper"
-    ).children();
+async function getWeibos(url: string) {
+  const cookies = parseCookieString(cookieString);
+  console.log(cookies);
 
-    // 遍历并处理子 div 元素
-    const weibos = subDivs
-      .map((index, element) => {
-        let weibo = new Weibo();
-        const href = $(element)
-          .find(
-            "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
-          )
-          .attr("href");
-        const authorName = $(element)
-          .find(
-            "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a > span"
-          )
-          .text();
-        weibo.href = href ?? "";
-        weibo.authorName = authorName ?? "";
-        weibo.content = $(element)
-          .find("div > article > div > div.wbpro-feed-content")
-          .text();
-        weibo.retweetContent = $(element)
-          .find("div > article > div > div.retweet")
-          .text();
-        weibo.likeNumber = $(element)
-          .find(
-            "div > article > footer > div > div > div > div:nth-child(3) > div > button > span.woo-like-count"
-          )
-          .text();
-        weibo.authorId =
-          $(element)
-            .find(
-              "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a"
-            )
-            .attr("usercard") ?? "";
-        return weibo;
-      })
-      .toArray();
-    weibos.forEach((weibo, index) => {
-      console.log(index, ",", weibo);
-    });
-  })
-  .catch((error) => {
-    console.error("Error:", error);
+  const pageContent = await fetchPageContent(url, cookies);
+  const $ = cheerio.load(pageContent);
+  //#scroller > div.vue-recycle-scroller__item-wrapper > div.vue-recycle-scroller__item-view.xh-highlight
+  const subDivs = $(
+    "#scroller > div.vue-recycle-scroller__item-wrapper"
+  ).children();
+
+  // 遍历并处理子 div 元素
+  const weibos = subDivs
+    .map((index, element) => {
+      return createWeiboObject($, element);
+    })
+    .toArray();
+  weibos.forEach((weibo, index) => {
+    console.log(index, ",", weibo);
   });
+  return weibos;
+}
+
+function createWeiboObject($: cheerio.CheerioAPI, element: cheerio.Element) {
+  let weibo = new Weibo();
+  const href = $(element)
+    .find(
+      "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
+    )
+    .attr("href");
+  const authorName = $(element)
+    .find(
+      "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a > span"
+    )
+    .text();
+  weibo.href = href ?? "";
+  weibo.authorName = authorName ?? "";
+  weibo.content = $(element)
+    .find("div > article > div > div.wbpro-feed-content")
+    .text();
+  weibo.retweetContent = $(element)
+    .find("div > article > div > div.retweet")
+    .text();
+  weibo.likeNumber = $(element)
+    .find(
+      "div > article > footer > div > div > div > div:nth-child(3) > div > button > span.woo-like-count"
+    )
+    .text();
+  weibo.authorId =
+    $(element)
+      .find(
+        "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a"
+      )
+      .attr("usercard") ?? "";
+  return weibo;
+}
+
+// Usage
+const url = "https://weibo.com/u/1497035431"; // 替换为您要抓取的网页URL
+
+async function main() {
+  const client = await db.connect();
+  console.log("connected to db");
+  await createTable(client);
+  console.log("created table");
+  const weibos = await getWeibos(url);
+  insertWeibos(weibos,client);
+  client.release();
+}
+
+async function insertWeibos(weibos:Weibo[],client:VercelPoolClient) {
+  for (const weibo of weibos) {
+    const existingWeibo = await client.query(
+      `select * from weibo where href = $1`,
+      [weibo.href]
+    );
+
+    if (existingWeibo.rows.length === 0) {
+      await client.query(
+        `insert into weibo(authorName,href,authorId,content,retweetContent,date,likeNumber) values($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          weibo.authorName,
+          weibo.href,
+          weibo.authorId,
+          weibo.content,
+          weibo.retweetContent,
+          weibo.date,
+          weibo.likeNumber,
+        ]
+      );
+    }
+    console.log("inserted weibo", weibo);
+  }
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

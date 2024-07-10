@@ -9,7 +9,7 @@
     "clean": "rm -rf dist data markdown",
     "seed": "node -r dotenv/config ./seed.js",
     "testConnect": " node ./seed.js",
-    "weibo": "ts-node weibo.ts"
+    "weibo": "ts-node -r dotenv/config weibo.ts"
   },
   "repository": {
     "type": "git",

@@ -11,6 +11,6 @@
     "files": [
         "index.ts",
         "seed.js",
-        "weibo_failed.ts"
+        "weibo.ts"
     ]
 }
