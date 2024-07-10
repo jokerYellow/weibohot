@@ -12,7 +12,7 @@ class Weibo {
   authorId: string;
   content: string;
   retweetContent: string;
-  date: string;
+  date: Date;
   likeNumber: string;
   toString(): string {
     return `authorName:${this.authorName} href:${this.href} authorId:${this.authorId} content:${this.content} retweetContent:${this.retweetContent} date:${this.date} likeNumber:${this.likeNumber}`;
@@ -69,7 +69,7 @@ async function createTable(client: VercelPoolClient) {
     authorId varchar(255),
     content text,
     retweetContent text,
-    date varchar(255),
+    date DATE,
     likeNumber varchar(255));`
   );
 }
@@ -99,6 +99,7 @@ async function getWeibos(url: string) {
 
 function createWeiboObject($: cheerio.CheerioAPI, element: cheerio.Element) {
   let weibo = new Weibo();
+  weibo.date = new Date();
   const href = $(element)
     .find(
       "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
@@ -160,7 +161,7 @@ async function insertWeibos(weibos:Weibo[],client:VercelPoolClient) {
           weibo.authorId,
           weibo.content,
           weibo.retweetContent,
-          weibo.date,
+          weibo.date.toISOString(),
           weibo.likeNumber,
         ]
       );
