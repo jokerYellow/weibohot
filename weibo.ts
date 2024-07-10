@@ -133,19 +133,25 @@ function createWeiboObject($: cheerio.CheerioAPI, element: cheerio.Element) {
 }
 
 // Usage
-const url = "https://weibo.com/u/1497035431"; // 替换为您要抓取的网页URL
+const urls = [
+  "https://weibo.com/u/1497035431",
+  "https://weibo.com/u/1401527553",
+  "https://weibo.com/u/6827625527",
+];
 
 async function main() {
   const client = await db.connect();
   console.log("connected to db");
   await createTable(client);
   console.log("created table");
-  const weibos = await getWeibos(url);
-  insertWeibos(weibos,client);
+  urls.forEach(async (url) => {
+    const weibos = await getWeibos(url);
+    insertWeibos(weibos, client);
+  });
   client.release();
 }
 
-async function insertWeibos(weibos:Weibo[],client:VercelPoolClient) {
+async function insertWeibos(weibos: Weibo[], client: VercelPoolClient) {
   for (const weibo of weibos) {
     const existingWeibo = await client.query(
       `select * from weibo where href = $1`,
