@@ -10,7 +10,7 @@
     "seed": "node -r dotenv/config ./seed.js",
     "testConnect": " node ./seed.js",
     "weibo": "ts-node -r dotenv/config weibo.ts",
-    "updatePenny":"node -r dotenv/config dist/index.js"
+    "updatePenny":"node -r dotenv/config dist/weibo.js"
   },
   "repository": {
     "type": "git",
