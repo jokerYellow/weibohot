@@ -1,6 +1,7 @@
 import * as puppeteer from "puppeteer";
 import * as cheerio from "cheerio";
-import { Client, db, VercelPoolClient } from "@vercel/postgres";
+import { db, VercelPoolClient } from "@vercel/postgres";
+import { setTimeout } from "node:timers/promises";
 
 const cookieString =
   "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWawXashXUV0jJ6asTDNm0T; SUB=_2AkMWuqOaf8NxqwJRmP4XyGviZI10zAHEieKg5lJBJRMxHRl-yT8XqkEhtRB6PTqNdRNl2srRcYSRuDiYpmQ_pAi58gH3; _s_tentry=passport.weibo.com; Apache=6796928672649.46.1642474670986; SINAGLOBAL=6796928672649.46.1642474670986; ULV=1642474671041:1:1:1:6796928672649.46.1642474670986:";
@@ -22,7 +23,8 @@ class Weibo {
 async function fetchPageContent(
   url: string,
   cookies: puppeteer.Protocol.Network.CookieParam[]
-): Promise<string> {
+): Promise<Weibo[]> {
+  let result = [];
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
@@ -30,12 +32,29 @@ async function fetchPageContent(
   await page.setCookie(...cookies);
 
   await page.goto(url, { waitUntil: "networkidle0" }); // 等待页面加载完成
-
-  const content = await page.content();
-
+  const firstFrameWeibos = getWeiboFrom(await page.content());
+  if (firstFrameWeibos.length > 0) {
+    result.push(...firstFrameWeibos);
+  }
+  console.log("first frame weibos", firstFrameWeibos);
+  for (let i = 0; i < 2; i++) {
+    await page.evaluate(() => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await setTimeout(3000);
+    const wb = getWeiboFrom(await page.content());
+    console.log("wb ", i, " ", wb);
+    if (wb.length > 0) {
+      wb.forEach((weibo) => {
+        if (!result.find((item) => item.href === weibo.href)) {
+          result.push(weibo);
+        }
+      });
+    }
+  }
   await browser.close();
 
-  return content;
+  return result;
 }
 
 function parseCookieString(
@@ -77,23 +96,22 @@ async function createTable(client: VercelPoolClient) {
 async function getWeibos(url: string) {
   const cookies = parseCookieString(cookieString);
   console.log(cookies);
+  const weibos = await fetchPageContent(url, cookies);
+  return weibos;
+}
 
-  const pageContent = await fetchPageContent(url, cookies);
+function getWeiboFrom(pageContent: string) {
   const $ = cheerio.load(pageContent);
   //#scroller > div.vue-recycle-scroller__item-wrapper > div.vue-recycle-scroller__item-view.xh-highlight
   const subDivs = $(
     "#scroller > div.vue-recycle-scroller__item-wrapper"
   ).children();
-
   // 遍历并处理子 div 元素
   const weibos = subDivs
     .map((index, element) => {
       return createWeiboObject($, element);
     })
     .toArray();
-  weibos.forEach((weibo, index) => {
-    console.log(index, ",", weibo);
-  });
   return weibos;
 }
 
@@ -146,6 +164,7 @@ async function main() {
   console.log("created table");
   urls.forEach(async (url) => {
     const weibos = await getWeibos(url);
+    console.log("weibos ",weibos.length,' ', weibos);
     insertWeibos(weibos, client);
   });
   client.release();
