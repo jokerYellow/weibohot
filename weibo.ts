@@ -161,13 +161,15 @@ async function main() {
   const client = await db.connect();
   console.log("connected to db");
   await createTable(client);
+  client.release();
   console.log("created table");
   urls.forEach(async (url) => {
     const weibos = await getWeibos(url);
     console.log("weibos ",weibos.length,' ', weibos);
+    const client = await db.connect();
     insertWeibos(weibos, client);
+    client.release();
   });
-  client.release();
 }
 
 async function insertWeibos(weibos: Weibo[], client: VercelPoolClient) {
