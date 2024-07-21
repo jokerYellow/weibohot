@@ -13,14 +13,15 @@ class Weibo {
   authorId: string;
   content: string;
   retweetContent: string;
+  retweetAuther: string;
   date: Date;
   likeNumber: string;
   toString(): string {
-    return `authorName:${this.authorName} href:${this.href} authorId:${this.authorId} content:${this.content} retweetContent:${this.retweetContent} date:${this.date} likeNumber:${this.likeNumber}`;
+    return `authorName:${this.authorName} href:${this.href} authorId:${this.authorId} content:${this.content} retweetContent:${this.retweetContent} date:${this.date} likeNumber:${this.likeNumber} retweetAuthor:${this.retweetAuther}`;
   }
 }
 
-async function fetchPageContent(
+async function fetchWeibosFromAuthorURL(
   url: string,
   cookies: puppeteer.Protocol.Network.CookieParam[]
 ): Promise<Weibo[]> {
@@ -32,18 +33,22 @@ async function fetchPageContent(
   await page.setCookie(...cookies);
 
   await page.goto(url, { waitUntil: "networkidle0" }); // 等待页面加载完成
-  const firstFrameWeibos = getWeiboFrom(await page.content());
+  const firstFrameWeibos = await getWeibosFrom(await page.content());
   if (firstFrameWeibos.length > 0) {
     result.push(...firstFrameWeibos);
   }
-  console.log("first frame weibos", firstFrameWeibos);
   for (let i = 0; i < 2; i++) {
+    console.log(`scrolling ${i}`);
+    //page scroll twice to get more weibos
     await page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight);
+      window.scrollTo(0, document.body.scrollHeight - 300);
+    });
+    await page.evaluate(() => {
+      window.scrollTo(0, document.body.scrollHeight - 300);
     });
     await setTimeout(3000);
-    const wb = getWeiboFrom(await page.content());
-    console.log("wb ", i, " ", wb);
+    const content = await page.content();
+    const wb = await getWeibosFrom(content);
     if (wb.length > 0) {
       wb.forEach((weibo) => {
         if (!result.find((item) => item.href === weibo.href)) {
@@ -78,8 +83,9 @@ function parseCookieString(
   return cookies;
 }
 
+//alert table add a new column retweenAuthor
+
 async function createTable(client: VercelPoolClient) {
-  // const client = await db.connect();
   await client.query(
     `create table IF NOT EXISTS weibo(
     id serial primary key,
@@ -91,63 +97,146 @@ async function createTable(client: VercelPoolClient) {
     date DATE,
     likeNumber varchar(255));`
   );
+  await client.query(
+    `DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_name = 'weibo' 
+        AND column_name = 'retweetAuthor'
+    ) THEN
+        ALTER TABLE weibo ADD COLUMN retweetAuthor VARCHAR(255);
+    END IF;
+END
+$$;`
+  );
 }
 
-async function getWeibos(url: string) {
+export async function getWeibos(url: string) {
   const cookies = parseCookieString(cookieString);
   console.log(cookies);
-  const weibos = await fetchPageContent(url, cookies);
+  const weibos = await fetchWeibosFromAuthorURL(url, cookies);
   return weibos;
 }
 
-function getWeiboFrom(pageContent: string) {
-  const $ = cheerio.load(pageContent);
-  //#scroller > div.vue-recycle-scroller__item-wrapper > div.vue-recycle-scroller__item-view.xh-highlight
-  const subDivs = $(
-    "#scroller > div.vue-recycle-scroller__item-wrapper"
-  ).children();
-  // 遍历并处理子 div 元素
-  const weibos = subDivs
-    .map((index, element) => {
-      return createWeiboObject($, element);
-    })
-    .toArray();
-  return weibos;
-}
-
-function createWeiboObject($: cheerio.CheerioAPI, element: cheerio.Element) {
-  let weibo = new Weibo();
-  weibo.date = new Date();
-  const href = $(element)
-    .find(
-      "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
-    )
-    .attr("href");
-  const authorName = $(element)
-    .find(
-      "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a > span"
-    )
-    .text();
-  weibo.href = href ?? "";
-  weibo.authorName = authorName ?? "";
-  weibo.content = $(element)
-    .find("div > article > div > div.wbpro-feed-content")
-    .text();
-  weibo.retweetContent = $(element)
-    .find("div > article > div > div.retweet")
-    .text();
-  weibo.likeNumber = $(element)
-    .find(
-      "div > article > footer > div > div > div > div:nth-child(3) > div > button > span.woo-like-count"
-    )
-    .text();
-  weibo.authorId =
-    $(element)
+function getWeiboLinksFrom(content: string) {
+  const $ = cheerio.load(content);
+  let result = [];
+  $("article").each((index, element) => {
+    const href = $(element)
       .find(
-        "div > article > div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.head_nick_1yix2 > a"
+        "div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
       )
-      .attr("usercard") ?? "";
-  return weibo;
+      .attr("href");
+    console.log("get weibo link: ", href);
+    if (href.length > 0) {
+      result.push(href);
+    }
+  });
+  return result;
+}
+
+let catchedLinks = new Set();
+
+async function getWeibosFrom(pageContent: string) {
+  const links = getWeiboLinksFrom(pageContent);
+  let result = [];
+  for (const link of links) {
+    if (catchedLinks.has(link)) {
+      console.log(`skip ${link}`);
+      continue;
+    }
+    try {
+      const weibo = await fetchWeiboDetail(link);
+      if (weibo.href.length > 0) {
+        result.push(weibo);
+        catchedLinks.add(link);
+      } else {
+        console.error(`failed to fetch weibo from ${link}`);
+      }
+    } catch (e) {
+      console.error(`failed to fetch weibo from ${link}`);
+    }
+  }
+  return result;
+}
+
+async function main() {
+  console.log("created table");
+  let weibos = [];
+  urls.forEach(async (url) => {
+    const items = await getWeibos(url);
+    console.log("weibos ", items.length, " ", items);
+    weibos.push(...items);
+  });
+  const client = await db.connect();
+  insertWeibos(weibos, client);
+  client.release();
+}
+
+async function insertWeibos(weibos: Weibo[], client: VercelPoolClient) {
+  for (const weibo of weibos) {
+    await insertWeibo(weibo, client);
+  }
+}
+
+export async function insertWeibo(weibo: Weibo, client: VercelPoolClient) {
+  const existingWeibo = await client.query(
+    `select * from weibo where href = $1`,
+    [weibo.href]
+  );
+
+  if (existingWeibo.rows.length === 0) {
+    await client.query(
+      `insert into weibo(authorName,href,authorId,content,retweetContent,date,likeNumber,retweetAuthor) values($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        weibo.authorName,
+        weibo.href,
+        weibo.authorId,
+        weibo.content,
+        weibo.retweetContent,
+        weibo.date.toISOString(),
+        weibo.likeNumber,
+        weibo.retweetAuther,
+      ]
+    );
+  }
+  console.log("inserted weibo", weibo);
+}
+
+export async function fetchWeiboDetail(url: string): Promise<Weibo> {
+  const cookies = parseCookieString(cookieString);
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  let result = new Weibo();
+  // 设置 Cookie
+  await page.setCookie(...cookies);
+  console.log("fetching weibo detail from ", url);
+  await page.goto(url, { waitUntil: "networkidle0" }); // 等待页面加载完成
+  await setTimeout(3000);
+
+  const $ = cheerio.load(await page.content());
+  const article = $("article");
+  result.href = url;
+  const datestring = article
+    .find(
+      "div.Feed_body_3R0rO > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
+    )
+    .text();
+  result.date = parseDateString(datestring);
+  result.content = $(".wbpro-feed-content").text();
+  result.retweetContent = $(".retweet").text();
+  result.authorName = article
+    .find("div > header > div> div > div> a > span")
+    .text();
+  result.authorId =
+    article.find("div > header > div > div > div> a").attr("usercard") ?? "";
+  result.likeNumber = article.find(".woo-like-count").text();
+  result.retweetAuther = $(".retweet").find(".detail_nick_u-ffy").text();
+  result.retweetContent = $(".retweet").find(".detail_wbtext_4CRf9").text();
+  await browser.close();
+
+  return result;
 }
 
 // Usage
@@ -157,47 +246,34 @@ const urls = [
   "https://weibo.com/u/6827625527",
 ];
 
-async function main() {
-  const client = await db.connect();
-  console.log("connected to db");
-  await createTable(client);
-  client.release();
-  console.log("created table");
-  urls.forEach(async (url) => {
-    const weibos = await getWeibos(url);
-    console.log("weibos ",weibos.length,' ', weibos);
-    const client = await db.connect();
-    insertWeibos(weibos, client);
-    client.release();
-  });
-}
-
-async function insertWeibos(weibos: Weibo[], client: VercelPoolClient) {
-  for (const weibo of weibos) {
-    const existingWeibo = await client.query(
-      `select * from weibo where href = $1`,
-      [weibo.href]
-    );
-
-    if (existingWeibo.rows.length === 0) {
-      await client.query(
-        `insert into weibo(authorName,href,authorId,content,retweetContent,date,likeNumber) values($1,$2,$3,$4,$5,$6,$7)`,
-        [
-          weibo.authorName,
-          weibo.href,
-          weibo.authorId,
-          weibo.content,
-          weibo.retweetContent,
-          weibo.date.toISOString(),
-          weibo.likeNumber,
-        ]
-      );
-    }
-    console.log("inserted weibo", weibo);
-  }
-}
-
 main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+export function parseDateString(dateString: string): Date {
+  // Trim the string to remove leading and trailing spaces
+  dateString = dateString.trim();
+
+  // Split date and time
+  const [datePart, timePart] = dateString.split(" ");
+
+  // Split the date into day, month, and year
+  const [year, month, day] = datePart
+    .split("-")
+    .map((num) => parseInt(num, 10));
+
+  // Split the time into hour and minute
+  const [hour, minute] = timePart.split(":").map((num) => parseInt(num, 10));
+
+  // Create a new Date object using the parsed components
+  // Note: Month is 0-indexed, subtract 1 from the month
+  // Adjust the year to four digits if necessary
+  const fullYear = year < 100 ? year + 2000 : year;
+  const date = new Date(fullYear, month - 1, day, hour, minute);
+  // Adjust for GMT-8
+  const offsetHours = 8; // GMT-8
+  date.setHours(date.getHours() + offsetHours);
+
+  return date;
+}

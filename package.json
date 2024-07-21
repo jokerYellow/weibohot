@@ -8,9 +8,9 @@
     "deploy": "tsc && node -r dotenv/config dist/index.js",
     "clean": "rm -rf dist data markdown",
     "seed": "node -r dotenv/config ./seed.js",
-    "testConnect": " node ./seed.js",
     "weibo": "ts-node -r dotenv/config weibo.ts",
-    "updatePenny":"node -r dotenv/config dist/weibo.js"
+    "updatePenny":"node -r dotenv/config dist/weibo.js",
+    "testWeibo": "ts-node -r dotenv/config weiboHelper.ts"
   },
   "repository": {
     "type": "git",
