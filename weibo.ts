@@ -171,10 +171,17 @@ async function main() {
   }
   console.log("connect to db");
   const client = await db.connect();
-  console.log("insert weibos");
-  await insertWeibos(weibos, client);
-  console.log("insert weibos success");
-  client.release();
+  try{
+    console.log("insert weibos");
+    await insertWeibos(weibos, client);
+    console.log("insert weibos success");
+  }catch(e){
+    console.log("insert weibos failed",e);
+  }finally{
+    console.log("release client");
+    client.release();
+    console.log("client released");
+  }
 }
 
 async function insertWeibos(weibos: Weibo[], client: VercelPoolClient) {
@@ -245,14 +252,11 @@ export async function fetchWeiboDetail(url: string): Promise<Weibo> {
 // Usage
 const urls = [
   "https://weibo.com/u/1497035431",
-  "https://weibo.com/u/1401527553",
-  "https://weibo.com/u/6827625527",
+  // "https://weibo.com/u/1401527553",
+  // "https://weibo.com/u/6827625527",
 ];
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main().catch(console.error).finally(() => process.exit(0));
 
 export function parseDateString(dateString: string): Date {
   // Trim the string to remove leading and trailing spaces
