@@ -172,7 +172,7 @@ async function main() {
   console.log("connect to db");
   const client = await db.connect();
   console.log("insert weibos");
-  insertWeibos(weibos, client);
+  await insertWeibos(weibos, client);
   console.log("insert weibos success");
   client.release();
 }
