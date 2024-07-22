@@ -252,8 +252,8 @@ export async function fetchWeiboDetail(url: string): Promise<Weibo> {
 // Usage
 const urls = [
   "https://weibo.com/u/1497035431",
-  // "https://weibo.com/u/1401527553",
-  // "https://weibo.com/u/6827625527",
+  "https://weibo.com/u/1401527553",
+  "https://weibo.com/u/6827625527",
 ];
 
 main().catch(console.error).finally(() => process.exit(0));
