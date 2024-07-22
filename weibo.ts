@@ -164,13 +164,16 @@ async function getWeibosFrom(pageContent: string) {
 async function main() {
   console.log("created table");
   let weibos = [];
-  urls.forEach(async (url) => {
+  for (const url of urls) {
     const items = await getWeibos(url);
     console.log("weibos ", items.length, " ", items);
     weibos.push(...items);
-  });
+  }
+  console.log("connect to db");
   const client = await db.connect();
+  console.log("insert weibos");
   insertWeibos(weibos, client);
+  console.log("insert weibos success");
   client.release();
 }
 
