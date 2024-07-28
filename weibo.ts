@@ -2,6 +2,7 @@ import * as puppeteer from "puppeteer";
 import * as cheerio from "cheerio";
 import { db, VercelPoolClient } from "@vercel/postgres";
 import { setTimeout } from "node:timers/promises";
+import { randomInt } from "node:crypto";
 
 const cookieString =
   "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWawXashXUV0jJ6asTDNm0T; SUB=_2AkMWuqOaf8NxqwJRmP4XyGviZI10zAHEieKg5lJBJRMxHRl-yT8XqkEhtRB6PTqNdRNl2srRcYSRuDiYpmQ_pAi58gH3; _s_tentry=passport.weibo.com; Apache=6796928672649.46.1642474670986; SINAGLOBAL=6796928672649.46.1642474670986; ULV=1642474671041:1:1:1:6796928672649.46.1642474670986:";
@@ -25,40 +26,56 @@ async function fetchWeibosFromAuthorURL(
   url: string,
   cookies: puppeteer.Protocol.Network.CookieParam[]
 ): Promise<Weibo[]> {
-  let result = [];
-  const browser = await puppeteer.launch();
+  let links = [];
+  const browser = await puppeteer.launch({ headless: true, slowMo: 100, devtools: false });
   const page = await browser.newPage();
-
+  // 监听页面中的 console 事件
+  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+  page.on('error', err => console.error('PAGE ERROR:', err));
+  page.on('pageerror', pageErr => console.error('PAGE ERROR:', pageErr));
   // 设置 Cookie
   await page.setCookie(...cookies);
 
   await page.goto(url, { waitUntil: "networkidle0" }); // 等待页面加载完成
-  const firstFrameWeibos = await getWeibosFrom(await page.content());
+  const firstFrameWeibos = await getWeiboLinksFrom(await page.content());
   if (firstFrameWeibos.length > 0) {
-    result.push(...firstFrameWeibos);
+    links.push(...firstFrameWeibos);
   }
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 40; i++) {
     console.log(`scrolling ${i}`);
-    //page scroll twice to get more weibos
     await page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight - 300);
+      function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      window.scrollTo(0, window.scrollY + 100 + randomInt(200,400));
     });
-    await page.evaluate(() => {
-      window.scrollTo(0, document.body.scrollHeight - 300);
-    });
-    await setTimeout(3000);
+    const duration = 1000 + randomInt(3000)
+    console.log("scrolling done wait ",duration);
+    await setTimeout(duration);
     const content = await page.content();
-    const wb = await getWeibosFrom(content);
+    const wb = getWeiboLinksFrom(content);
     if (wb.length > 0) {
       wb.forEach((weibo) => {
-        if (!result.find((item) => item.href === weibo.href)) {
-          result.push(weibo);
+        if (!links.find((item) => item === weibo)) {
+          links.push(weibo);
         }
       });
     }
   }
-  await browser.close();
 
+  await browser.close();
+  console.log("fetch weibo links ", links);
+  let result = [];
+  for (const link of links) {
+    try {
+      const weibo = await fetchWeiboDetail(link);
+      if (weibo.href.length > 0) {
+        result.push(weibo);
+      }
+    } catch (e) {
+      console.error(`failed to fetch weibo from ${link}`);
+    }
+  }
   return result;
 }
 
@@ -128,36 +145,11 @@ function getWeiboLinksFrom(content: string) {
         "div > header > div.woo-box-item-flex.head_main_3DRDm > div > div.woo-box-flex.woo-box-alignCenter.woo-box-justifyCenter.head-info_info_2AspQ > a"
       )
       .attr("href");
-    console.log("get weibo link: ", href);
+    console.log("get weibo link: ", href, "content ",$(element).text().substring(0,40).replace(/\n/g, ""));
     if (href.length > 0) {
       result.push(href);
     }
   });
-  return result;
-}
-
-let catchedLinks = new Set();
-
-async function getWeibosFrom(pageContent: string) {
-  const links = getWeiboLinksFrom(pageContent);
-  let result = [];
-  for (const link of links) {
-    if (catchedLinks.has(link)) {
-      console.log(`skip ${link}`);
-      continue;
-    }
-    try {
-      const weibo = await fetchWeiboDetail(link);
-      if (weibo.href.length > 0) {
-        result.push(weibo);
-        catchedLinks.add(link);
-      } else {
-        console.error(`failed to fetch weibo from ${link}`);
-      }
-    } catch (e) {
-      console.error(`failed to fetch weibo from ${link}`);
-    }
-  }
   return result;
 }
 
@@ -171,13 +163,13 @@ async function main() {
   }
   console.log("connect to db");
   const client = await db.connect();
-  try{
+  try {
     console.log("insert weibos");
     await insertWeibos(weibos, client);
     console.log("insert weibos success");
-  }catch(e){
-    console.log("insert weibos failed",e);
-  }finally{
+  } catch (e) {
+    console.log("insert weibos failed", e);
+  } finally {
     console.log("release client");
     client.release();
     console.log("client released");
