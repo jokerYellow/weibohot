@@ -208,7 +208,10 @@ export async function insertWeibo(weibo: Weibo, client: VercelPoolClient) {
 
 export async function fetchWeiboDetail(url: string): Promise<Weibo> {
   const cookies = parseCookieString(cookieString);
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disabled-setupid-sandbox"],
+  });
+  
   const page = await browser.newPage();
   let result = new Weibo();
   // 设置 Cookie
