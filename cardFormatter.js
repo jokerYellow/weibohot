@@ -1,35 +1,27 @@
+"use strict";
 /**
  * 卡片格式化器 - 将微博数据格式化为美观的卡片
  * Card Formatter - Format weibo data into aesthetically pleasing cards
  */
-
-interface WeiboCard {
-  authorName: string;
-  href: string;
-  authorId: string;
-  content: string;
-  retweetContent: string;
-  retweetAuther: string;
-  date: Date;
-  likeNumber: string;
-}
-
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateHTMLCard = generateHTMLCard;
+exports.generateMarkdownCard = generateMarkdownCard;
+exports.generateStyledHTMLPage = generateStyledHTMLPage;
+exports.generateCompactCard = generateCompactCard;
 /**
  * 生成HTML格式的微博卡片
  * Generate HTML formatted weibo card
  */
-export function generateHTMLCard(weibo: WeiboCard): string {
-  const formattedDate = new Date(weibo.date).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  const hasRetweet = weibo.retweetContent && weibo.retweetContent.trim() !== '';
-  
-  return `
+function generateHTMLCard(weibo) {
+    const formattedDate = new Date(weibo.date).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    const hasRetweet = weibo.retweetContent && weibo.retweetContent.trim() !== '';
+    return `
 <div class="weibo-card">
   <div class="card-header">
     <div class="author-info">
@@ -70,23 +62,20 @@ export function generateHTMLCard(weibo: WeiboCard): string {
   </div>
 </div>`;
 }
-
 /**
  * 生成Markdown格式的微博卡片
  * Generate Markdown formatted weibo card
  */
-export function generateMarkdownCard(weibo: WeiboCard): string {
-  const formattedDate = new Date(weibo.date).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  const hasRetweet = weibo.retweetContent && weibo.retweetContent.trim() !== '';
-  
-  let markdown = `
+function generateMarkdownCard(weibo) {
+    const formattedDate = new Date(weibo.date).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    const hasRetweet = weibo.retweetContent && weibo.retweetContent.trim() !== '';
+    let markdown = `
 ---
 
 ## 👤 ${weibo.authorName}
@@ -96,18 +85,16 @@ export function generateMarkdownCard(weibo: WeiboCard): string {
 
 ${weibo.content}
 `;
-
-  if (hasRetweet) {
-    markdown += `
+    if (hasRetweet) {
+        markdown += `
 ### 🔄 转发内容
 
 > **@${weibo.retweetAuther}**
 > 
 > ${weibo.retweetContent.split('\n').map(line => `> ${line}`).join('\n')}
 `;
-  }
-
-  markdown += `
+    }
+    markdown += `
 ### 📊 互动数据
 
 ❤️ ${weibo.likeNumber || '0'} 个赞
@@ -116,18 +103,15 @@ ${weibo.content}
 
 ---
 `;
-
-  return markdown;
+    return markdown;
 }
-
 /**
  * 生成带样式的完整HTML页面
  * Generate complete HTML page with styles
  */
-export function generateStyledHTMLPage(weibos: WeiboCard[], title: string = "微博卡片"): string {
-  const cardsHtml = weibos.map(generateHTMLCard).join('\n');
-  
-  return `
+function generateStyledHTMLPage(weibos, title = "微博卡片") {
+    const cardsHtml = weibos.map(generateHTMLCard).join('\n');
+    return `
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -148,13 +132,12 @@ export function generateStyledHTMLPage(weibos: WeiboCard[], title: string = "微
 </body>
 </html>`;
 }
-
 /**
  * 获取卡片样式
  * Get card styles
  */
-function getCardStyles(): string {
-  return `
+function getCardStyles() {
+    return `
     * {
         box-sizing: border-box;
     }
@@ -414,33 +397,29 @@ function getCardStyles(): string {
     }
   `;
 }
-
 /**
  * HTML转义函数
  * HTML escape function
  */
-function escapeHtml(text: string): string {
-  if (typeof text !== 'string') return '';
-  
-  const map: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+function escapeHtml(text) {
+    if (typeof text !== 'string')
+        return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, (m) => map[m]);
 }
-
 /**
  * 生成简洁版卡片（用于列表显示）
  * Generate compact card for list display
  */
-export function generateCompactCard(weibo: WeiboCard): string {
-  const formattedDate = new Date(weibo.date).toLocaleDateString('zh-CN');
-  
-  return `
+function generateCompactCard(weibo) {
+    const formattedDate = new Date(weibo.date).toLocaleDateString('zh-CN');
+    return `
 <div class="compact-card">
   <div class="compact-header">
     <span class="compact-author">${escapeHtml(weibo.authorName)}</span>
