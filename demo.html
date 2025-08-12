@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博卡片美化效果展示</title>
+    <link rel="stylesheet" href="styles/cards.css">
+    <style>
+        .demo-section {
+            margin: 40px 0;
+        }
+        .demo-title {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .old-style {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+        .section-label {
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">🎨 微博卡片美化效果对比</h1>
+        
+        <div class="demo-section">
+            <div class="comparison">
+                <div>
+                    <div class="section-label">❌ 改进前 - 简单文本</div>
+                    <div class="old-style">
+authorName: 科技日报
+href: https://weibo.com/example1
+authorId: kejiribaoa
+content: 🚀 重大突破！我国科学家在量子计算领域取得新进展，成功实现了256位量子比特的稳定操控。这一成果将为人工智能、密码学等领域带来革命性变化。这项研究历时3年，团队克服了量子退相干、错误校正等技术难题，为构建实用化量子计算机奠定了重要基础。
+retweetContent: 量子计算的春天来了！期待这项技术能够早日应用到实际生活中，改变我们的世界。
+retweetAuthor: 量子科技爱好者
+date: 2024-01-15T10:30:00
+likeNumber: 1.2万
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="section-label">✅ 改进后 - 美观卡片</div>
+                    <div class="weibo-card">
+                        <div class="card-header">
+                            <div class="author-info">
+                                <div class="author-name">科技日报</div>
+                                <div class="author-id">@kejiribaoa</div>
+                            </div>
+                            <div class="post-date">2024/01/15 10:30</div>
+                        </div>
+                        
+                        <div class="card-content">
+                            <div class="main-content">
+                                🚀 重大突破！我国科学家在量子计算领域取得新进展，成功实现了256位量子比特的稳定操控。这一成果将为人工智能、密码学等领域带来革命性变化。<br><br>这项研究历时3年，团队克服了量子退相干、错误校正等技术难题，为构建实用化量子计算机奠定了重要基础。
+                            </div>
+                            
+                            <div class="retweet-section">
+                                <div class="retweet-header">
+                                    <span class="retweet-icon">🔄</span>
+                                    <span class="retweet-author">@量子科技爱好者</span>
+                                </div>
+                                <div class="retweet-content">
+                                    量子计算的春天来了！期待这项技术能够早日应用到实际生活中，改变我们的世界。
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <div class="engagement">
+                                <span class="like-count">
+                                    <span class="like-icon">❤️</span>
+                                    1.2万
+                                </span>
+                            </div>
+                            <a href="https://weibo.com/example1" class="view-original" target="_blank">
+                                查看原文 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🌟 主要改进特点</h2>
+            
+            <div class="weibo-card">
+                <div class="card-header">
+                    <div class="author-info">
+                        <div class="author-name">改进特点说明</div>
+                        <div class="author-id">@weibohot</div>
+                    </div>
+                    <div class="post-date">2024/08/12</div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="main-content">
+                        ✨ <strong>视觉美化</strong>：圆角卡片、渐变背景、优雅阴影<br>
+                        📱 <strong>响应式设计</strong>：完美适配手机、平板、桌面<br>
+                        🎨 <strong>现代化布局</strong>：清晰的信息层级和视觉层次<br>
+                        🔄 <strong>转发区域</strong>：特殊样式突出转发内容<br>
+                        💖 <strong>互动数据</strong>：生动的点赞显示和链接按钮<br>
+                        ⚡ <strong>悬停效果</strong>：鼠标悬停时的动态反馈<br>
+                        🌓 <strong>主题支持</strong>：支持深色模式和打印样式
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="engagement">
+                        <span class="like-count">
+                            <span class="like-icon">❤️</span>
+                            ∞
+                        </span>
+                    </div>
+                    <a href="https://github.com/jokerYellow/weibohot" class="view-original" target="_blank">
+                        查看项目 →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📋 紧凑版卡片示例</h2>
+            
+            <div class="compact-card">
+                <div class="compact-header">
+                    <span class="compact-author">人民日报</span>
+                    <span class="compact-date">2024/01/14</span>
+                </div>
+                <div class="compact-content">
+                    💡 教育部发布重要通知：全面推进义务教育优质均衡发展，确保每个孩子都能享受公平而有质量的教育...
+                </div>
+                <div class="compact-footer">
+                    <span class="compact-likes">❤️ 8.5万</span>
+                    <a href="#" class="compact-link">查看详情</a>
+                </div>
+            </div>
+
+            <div class="compact-card">
+                <div class="compact-header">
+                    <span class="compact-author">央视新闻</span>
+                    <span class="compact-date">2024/01/13</span>
+                </div>
+                <div class="compact-content">
+                    🌍 联合国气候变化大会传来好消息！多国承诺加大清洁能源投资，共同应对全球气候挑战...
+                </div>
+                <div class="compact-footer">
+                    <span class="compact-likes">❤️ 15.6万</span>
+                    <a href="#" class="compact-link">查看详情</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div style="text-align: center; color: white; margin-top: 40px;">
+                <h3>🚀 立即体验</h3>
+                <p>运行 <code style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">npm run generate-cards</code> 生成您自己的美观微博卡片！</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

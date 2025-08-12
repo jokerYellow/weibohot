@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热点卡片展示</title>
+    <style>
+        
+    * {
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .page-title {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        font-size: 2.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .weibo-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .weibo-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .author-info {
+        flex: 1;
+    }
+    
+    .author-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    
+    .author-id {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+    
+    .post-date {
+        font-size: 0.85rem;
+        color: #95a5a6;
+        white-space: nowrap;
+    }
+    
+    .card-content {
+        margin-bottom: 16px;
+    }
+    
+    .main-content {
+        font-size: 1rem;
+        line-height: 1.7;
+        color: #2c3e50;
+        margin-bottom: 16px;
+    }
+    
+    .retweet-section {
+        background: #f8f9fa;
+        border-left: 4px solid #3498db;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+    
+    .retweet-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: #3498db;
+        font-weight: 500;
+    }
+    
+    .retweet-icon {
+        margin-right: 8px;
+    }
+    
+    .retweet-content {
+        color: #5a6c7d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+    }
+    
+    .engagement {
+        display: flex;
+        gap: 16px;
+    }
+    
+    .like-count {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #e74c3c;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .like-icon {
+        font-size: 1rem;
+    }
+    
+    .view-original {
+        color: #3498db;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+    }
+    
+    .view-original:hover {
+        background-color: #ecf0f1;
+        text-decoration: none;
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 16px;
+        }
+        
+        .weibo-card {
+            padding: 20px;
+            margin: 0 -8px;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .card-header {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+    }
+  
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">微博热点卡片展示</h1>
+        <div class="cards-container">
+            
+<div class="weibo-card">
+  <div class="card-header">
+    <div class="author-info">
+      <div class="author-name">科技日报</div>
+      <div class="author-id">@kejiribaoa</div>
+    </div>
+    <div class="post-date">2024/01/15 10:30</div>
+  </div>
+  
+  <div class="card-content">
+    <div class="main-content">
+      🚀 重大突破！我国科学家在量子计算领域取得新进展，成功实现了256位量子比特的稳定操控。这一成果将为人工智能、密码学等领域带来革命性变化。<br><br>这项研究历时3年，团队克服了量子退相干、错误校正等技术难题，为构建实用化量子计算机奠定了重要基础。
+    </div>
+    
+    
+    <div class="retweet-section">
+      <div class="retweet-header">
+        <span class="retweet-icon">🔄</span>
+        <span class="retweet-author">@量子科技爱好者</span>
+      </div>
+      <div class="retweet-content">
+        量子计算的春天来了！期待这项技术能够早日应用到实际生活中，改变我们的世界。
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="card-footer">
+    <div class="engagement">
+      <span class="like-count">
+        <span class="like-icon">❤️</span>
+        1.2万
+      </span>
+    </div>
+    <a href="https://weibo.com/example1" class="view-original" target="_blank">
+      查看原文 →
+    </a>
+  </div>
+</div>
+
+<div class="weibo-card">
+  <div class="card-header">
+    <div class="author-info">
+      <div class="author-name">人民日报</div>
+      <div class="author-id">@renminribao</div>
+    </div>
+    <div class="post-date">2024/01/14 15:45</div>
+  </div>
+  
+  <div class="card-content">
+    <div class="main-content">
+      💡 教育部发布重要通知：全面推进义务教育优质均衡发展，确保每个孩子都能享受公平而有质量的教育。<br><br>重点措施包括：<br>✅ 加强师资队伍建设<br>✅ 完善教学设施配置<br>✅ 推进信息化教学<br>✅ 建立长效保障机制
+    </div>
+    
+    
+  </div>
+  
+  <div class="card-footer">
+    <div class="engagement">
+      <span class="like-count">
+        <span class="like-icon">❤️</span>
+        8.5万
+      </span>
+    </div>
+    <a href="https://weibo.com/example2" class="view-original" target="_blank">
+      查看原文 →
+    </a>
+  </div>
+</div>
+
+<div class="weibo-card">
+  <div class="card-header">
+    <div class="author-info">
+      <div class="author-name">央视新闻</div>
+      <div class="author-id">@yangshixinwen</div>
+    </div>
+    <div class="post-date">2024/01/13 20:15</div>
+  </div>
+  
+  <div class="card-content">
+    <div class="main-content">
+      🌍 联合国气候变化大会传来好消息！多国承诺加大清洁能源投资，共同应对全球气候挑战。<br><br>中国代表团表示，将继续坚持绿色发展道路，力争2030年前实现碳达峰，2060年前实现碳中和目标。
+    </div>
+    
+    
+    <div class="retweet-section">
+      <div class="retweet-header">
+        <span class="retweet-icon">🔄</span>
+        <span class="retweet-author">@环保志愿者小王</span>
+      </div>
+      <div class="retweet-content">
+        地球是我们共同的家园，保护环境人人有责！支持绿色发展，从我做起。🌱
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="card-footer">
+    <div class="engagement">
+      <span class="like-count">
+        <span class="like-icon">❤️</span>
+        15.6万
+      </span>
+    </div>
+    <a href="https://weibo.com/example3" class="view-original" target="_blank">
+      查看原文 →
+    </a>
+  </div>
+</div>
+        </div>
+    </div>
+</body>
+</html>

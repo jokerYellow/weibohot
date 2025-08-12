@@ -3,6 +3,7 @@ import * as cheerio from "cheerio";
 import { db, VercelPoolClient } from "@vercel/postgres";
 import { setTimeout } from "node:timers/promises";
 import { randomInt } from "node:crypto";
+import { generateHTMLCard, generateMarkdownCard, generateStyledHTMLPage } from "./cardFormatter";
 
 const cookieString =
   "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWawXashXUV0jJ6asTDNm0T; SUB=_2AkMWuqOaf8NxqwJRmP4XyGviZI10zAHEieKg5lJBJRMxHRl-yT8XqkEhtRB6PTqNdRNl2srRcYSRuDiYpmQ_pAi58gH3; _s_tentry=passport.weibo.com; Apache=6796928672649.46.1642474670986; SINAGLOBAL=6796928672649.46.1642474670986; ULV=1642474671041:1:1:1:6796928672649.46.1642474670986:";
@@ -17,8 +18,43 @@ class Weibo {
   retweetAuther: string;
   date: Date;
   likeNumber: string;
+  
   toString(): string {
     return `authorName:${this.authorName} href:${this.href} authorId:${this.authorId} content:${this.content} retweetContent:${this.retweetContent} date:${this.date} likeNumber:${this.likeNumber} retweetAuthor:${this.retweetAuther}`;
+  }
+  
+  /**
+   * 生成HTML格式的美观卡片
+   * Generate beautiful HTML card
+   */
+  toHTMLCard(): string {
+    return generateHTMLCard({
+      authorName: this.authorName,
+      href: this.href,
+      authorId: this.authorId,
+      content: this.content,
+      retweetContent: this.retweetContent,
+      retweetAuther: this.retweetAuther,
+      date: this.date,
+      likeNumber: this.likeNumber
+    });
+  }
+  
+  /**
+   * 生成Markdown格式的美观卡片
+   * Generate beautiful Markdown card
+   */
+  toMarkdownCard(): string {
+    return generateMarkdownCard({
+      authorName: this.authorName,
+      href: this.href,
+      authorId: this.authorId,
+      content: this.content,
+      retweetContent: this.retweetContent,
+      retweetAuther: this.retweetAuther,
+      date: this.date,
+      likeNumber: this.likeNumber
+    });
   }
 }
 
@@ -252,6 +288,66 @@ const urls = [
 ];
 
 main().catch(console.error).finally(() => process.exit(0));
+
+/**
+ * 生成美观的微博卡片页面
+ * Generate beautiful weibo cards page
+ */
+export async function generateWeiboCardsPage(weibos: Weibo[], outputPath: string = "./weibo-cards.html"): Promise<void> {
+  const cardData = weibos.map(weibo => ({
+    authorName: weibo.authorName,
+    href: weibo.href,
+    authorId: weibo.authorId,
+    content: weibo.content,
+    retweetContent: weibo.retweetContent,
+    retweetAuther: weibo.retweetAuther,
+    date: weibo.date,
+    likeNumber: weibo.likeNumber
+  }));
+  
+  const htmlPage = generateStyledHTMLPage(cardData, "微博用户动态卡片");
+  
+  const fs = require('fs');
+  fs.writeFileSync(outputPath, htmlPage, 'utf8');
+  console.log(`✅ 美观的微博卡片页面已生成: ${outputPath}`);
+}
+
+/**
+ * 从数据库读取微博并生成美观的卡片页面
+ * Read weibos from database and generate beautiful cards page
+ */
+export async function generateCardsFromDatabase(limit: number = 20, outputPath: string = "./weibo-cards.html"): Promise<void> {
+  const client = await db.connect();
+  try {
+    const result = await client.query(`
+      SELECT authorname, href, authorid, content, retweetcontent, retweetauthor, date, likenumber 
+      FROM weibo 
+      ORDER BY date DESC 
+      LIMIT $1
+    `, [limit]);
+    
+    const weibos = result.rows.map(row => {
+      const weibo = new Weibo();
+      weibo.authorName = row.authorname || '';
+      weibo.href = row.href || '';
+      weibo.authorId = row.authorid || '';
+      weibo.content = row.content || '';
+      weibo.retweetContent = row.retweetcontent || '';
+      weibo.retweetAuther = row.retweetauthor || '';
+      weibo.date = row.date ? new Date(row.date) : new Date();
+      weibo.likeNumber = row.likenumber || '0';
+      return weibo;
+    });
+    
+    await generateWeiboCardsPage(weibos, outputPath);
+    console.log(`📊 从数据库读取了 ${weibos.length} 条微博数据并生成卡片页面`);
+    
+  } catch (error) {
+    console.error('生成卡片页面时出错:', error);
+  } finally {
+    client.release();
+  }
+}
 
 export function parseDateString(dateString: string): Date {
   // Trim the string to remove leading and trailing spaces

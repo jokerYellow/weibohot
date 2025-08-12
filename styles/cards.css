@@ -1,0 +1,444 @@
+/**
+ * 微博卡片自定义样式
+ * Custom styles for Weibo cards
+ * 
+ * 这个文件包含了微博卡片的所有样式，你可以根据需要进行自定义修改
+ * This file contains all styles for Weibo cards, you can customize as needed
+ */
+
+/* ==========================================================================
+   基础样式 / Base Styles
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   页面标题 / Page Title
+   ========================================================================== */
+
+.page-title {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   卡片容器 / Cards Container
+   ========================================================================== */
+
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==========================================================================
+   微博卡片主体 / Main Weibo Card
+   ========================================================================== */
+
+.weibo-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.weibo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   卡片头部 / Card Header
+   ========================================================================== */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.author-info {
+    flex: 1;
+}
+
+.author-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.author-id {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.post-date {
+    font-size: 0.85rem;
+    color: #95a5a6;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   卡片内容 / Card Content
+   ========================================================================== */
+
+.card-content {
+    margin-bottom: 16px;
+}
+
+.main-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    word-wrap: break-word;
+}
+
+/* ==========================================================================
+   转发区域 / Retweet Section
+   ========================================================================== */
+
+.retweet-section {
+    background: #f8f9fa;
+    border-left: 4px solid #3498db;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    position: relative;
+}
+
+.retweet-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, #3498db, transparent);
+}
+
+.retweet-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #3498db;
+    font-weight: 500;
+}
+
+.retweet-icon {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.retweet-author {
+    font-weight: 600;
+}
+
+.retweet-content {
+    color: #5a6c7d;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   卡片底部 / Card Footer
+   ========================================================================== */
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.engagement {
+    display: flex;
+    gap: 16px;
+}
+
+.like-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #e74c3c;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.like-icon {
+    font-size: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.view-original {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.view-original:hover {
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-color: #3498db;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   紧凑版卡片 / Compact Cards
+   ========================================================================== */
+
+.compact-card {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.compact-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.compact-author {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.compact-date {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.compact-content {
+    color: #34495e;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.compact-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.compact-likes {
+    color: #e74c3c;
+    font-size: 0.9rem;
+}
+
+.compact-link {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.compact-link:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   响应式设计 / Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    .weibo-card {
+        padding: 20px;
+        margin: 0 -8px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .main-content {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .weibo-card {
+        padding: 16px;
+        margin: 0;
+        border-radius: 12px;
+    }
+    
+    .author-name {
+        font-size: 1rem;
+    }
+    
+    .main-content {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .retweet-section {
+        padding: 12px;
+    }
+}
+
+/* ==========================================================================
+   主题变量 / Theme Variables
+   ========================================================================== */
+
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --accent-color: #e74c3c;
+    --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --card-background: white;
+    --text-color: #2c3e50;
+    --text-light: #7f8c8d;
+    --border-color: #eee;
+    --retweet-background: #f8f9fa;
+    --shadow-light: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.15);
+    --border-radius: 16px;
+    --border-radius-small: 8px;
+}
+
+/* ==========================================================================
+   深色主题支持 / Dark Theme Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --card-background: #2c3e50;
+        --text-color: #ecf0f1;
+        --text-light: #bdc3c7;
+        --border-color: #34495e;
+        --retweet-background: #34495e;
+    }
+    
+    .weibo-card {
+        background: var(--card-background);
+        color: var(--text-color);
+    }
+    
+    .author-name,
+    .main-content {
+        color: var(--text-color);
+    }
+    
+    .author-id,
+    .post-date {
+        color: var(--text-light);
+    }
+    
+    .retweet-content {
+        color: var(--text-light);
+    }
+    
+    .card-header,
+    .card-footer {
+        border-color: var(--border-color);
+    }
+}
+
+/* ==========================================================================
+   打印样式 / Print Styles
+   ========================================================================== */
+
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .weibo-card {
+        background: white !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        color: black !important;
+        text-shadow: none !important;
+    }
+    
+    .view-original {
+        color: #3498db !important;
+    }
+    
+    .like-icon {
+        animation: none !important;
+    }
+}
